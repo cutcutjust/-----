@@ -281,14 +281,19 @@ class FinancialAnalysisApplication:
                   f"(当前价格: {analysis['current_price']:.2f}, "
                   f"涨跌幅: {analysis['price_change_pct']:+.2f}%)")
         
-        # 绘制多时间周期对比图（Task4-1）
-        print("绘制多时间周期K线对比图...")
-        fig, axes = analyzer.plot_multi_timeframe_comparison(
+        # 绘制分离的多时间周期图表（Task4-1: 分为日线、周线、月线3张图）
+        print("绘制分离的多时间周期图表...")
+        charts = analyzer.plot_separate_timeframe_charts(
             timeframe_data, ma_data, macd_data,
-            f"{self.stock_code} - 多时间周期对比分析",
-            save_path=os.path.join(PATHS['charts'], 'task4_1_multi_timeframe_charts.png')
+            title_prefix=f"{self.stock_code} - ",
+            save_dir=PATHS['charts']
         )
-        plt.show()
+        
+        # 显示各个图表
+        timeframe_names = {'daily': '日线', 'weekly': '周线', 'monthly': '月线'}
+        for timeframe, (fig, axes) in charts.items():
+            print(f"  显示{timeframe_names[timeframe]}图表...")
+            plt.show()
         
         # 绘制趋势对比表（Task4-2）
         print("绘制趋势对比表...")
@@ -506,20 +511,22 @@ class FinancialAnalysisApplication:
             print(f"📄 报告文件保存在: {PATHS['reports']}")
             print("\n✅ 完成了以下6个任务及分图表:")
             print("   1. ✅ 移动平均线系统构建")
-            print("      └─ task1_ma_system.png")
+            print("      └─ task1_ma_system.png（K线+移动平均线）")
             print("   2. ✅ 布林带指标分析")
             print("      ├─ task2_1_bollinger_bands.png（K线+布林带）")
             print("      └─ task2_2_bollinger_bandwidth.png（布林带宽度变化）")
             print("   3. ✅ 自定义K线图样式")
-            print("      └─ task3_1_kline_macd_volume.png（K线+MACD+成交量）")
+            print("      └─ task3_1_kline_macd_volume.png（K线+MACD+成交量，3面板分离）")
             print("   4. ✅ 多时间周期图表")
-            print("      ├─ task4_1_multi_timeframe_charts.png（日周月对比）")
+            print("      ├─ task4_daily_chart.png（日线图表）")
+            print("      ├─ task4_weekly_chart.png（周线图表）")
+            print("      ├─ task4_monthly_chart.png（月线图表）")
             print("      └─ task4_2_trend_comparison_table.png（趋势对比表）")
             print("   5. ✅ KDJ与RSI指标比较")
-            print("      ├─ task5_kdj_chart.png（KDJ指标分析）")
-            print("      └─ task5_rsi_chart.png（RSI指标分析）")
+            print("      ├─ task5_kdj_chart.png（KDJ指标分析，3面板分离）")
+            print("      └─ task5_rsi_chart.png（RSI指标分析，3面板分离）")
             print("   6. ✅ KDJ超买超卖统计")
-            print("      └─ 详见任务6的输出分析")
+            print("      └─ 详见任务6的控制台输出分析")
             
             return True
             

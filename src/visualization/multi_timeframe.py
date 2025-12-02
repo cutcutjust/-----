@@ -197,6 +197,124 @@ class MultiTimeFrameAnalyzer:
         
         return trend_analysis
     
+    def plot_single_timeframe_chart(self, timeframe, data, ma_indicators, macd_indicators, title_prefix="", figsize=(16, 10), save_path=None):
+        """
+        绘制单个时间周期的图表
+        
+        Parameters:
+        timeframe: str - 时间周期名称
+        data: DataFrame - 该时间周期的数据
+        ma_indicators: dict - 移动平均线数据
+        macd_indicators: dict - MACD数据
+        title_prefix: str - 标题前缀
+        figsize: tuple - 图表大小
+        save_path: str - 保存路径
+        
+        Returns:
+        tuple - (fig, axes) 图表对象
+        """
+        timeframe_names = {'daily': '日线', 'weekly': '周线', 'monthly': '月线'}
+        name = timeframe_names.get(timeframe, timeframe)
+        
+        # 创建图表
+        fig, (ax_main, ax_macd) = plt.subplots(2, 1, figsize=figsize, 
+                                              gridspec_kw={'height_ratios': [3, 1], 'hspace': 0.3})
+        
+        # 绘制K线
+        self._plot_candlesticks(ax_main, data)
+        
+        # 绘制移动平均线
+        colors = ['blue', 'orange', 'red', 'green', 'purple']
+        for j, (ma_name, ma_series) in enumerate(ma_indicators.items()):
+            color = colors[j % len(colors)]
+            ax_main.plot(range(len(data)), ma_series, color=color, linewidth=2, 
+                        label=ma_name, alpha=0.8)
+        
+        ax_main.set_title(f'{title_prefix}{name} - K线图+移动平均线', fontsize=16, fontweight='bold')
+        ax_main.set_ylabel('价格 (元)', fontsize=12)
+        ax_main.legend(loc='upper left', fontsize=10)
+        ax_main.grid(True, alpha=0.3)
+        
+        # 绘制MACD
+        macd_line = macd_indicators['MACD']
+        signal_line = macd_indicators['Signal'] 
+        histogram = macd_indicators['Histogram']
+        
+        ax_macd.plot(range(len(data)), macd_line, color='red', linewidth=2, label='MACD')
+        ax_macd.plot(range(len(data)), signal_line, color='blue', linewidth=2, label='Signal')
+        
+        # 绘制柱状图
+        colors_hist = ['red' if x > 0 else 'green' for x in histogram]
+        ax_macd.bar(range(len(data)), histogram, color=colors_hist, alpha=0.6, width=0.8)
+        
+        ax_macd.axhline(y=0, color='black', linestyle='-', linewidth=1, alpha=0.8)
+        ax_macd.set_title(f'{name} - MACD指标', fontsize=14, fontweight='bold')
+        ax_macd.set_ylabel('MACD', fontsize=12)
+        ax_macd.set_xlabel('时间', fontsize=12)
+        ax_macd.legend(loc='upper left', fontsize=10)
+        ax_macd.grid(True, alpha=0.3)
+        
+        # 设置x轴标签
+        for ax in [ax_main, ax_macd]:
+            ax.set_xlim(-0.5, len(data)-0.5)
+            
+            # 设置x轴标签（简化显示）
+            n_ticks = min(8, len(data))
+            if n_ticks > 0:
+                tick_indices = np.linspace(0, len(data)-1, n_ticks, dtype=int)
+                tick_labels = [data.index[i].strftime('%Y-%m-%d') for i in tick_indices]
+                
+                ax.set_xticks(tick_indices)
+                ax.set_xticklabels(tick_labels, rotation=45, fontsize=10)
+        
+        plt.tight_layout()
+        
+        if save_path:
+            ensure_directory_exists(os.path.dirname(save_path))
+            fig.savefig(save_path, bbox_inches='tight', dpi=300)
+        
+        return fig, (ax_main, ax_macd)
+    
+    def plot_separate_timeframe_charts(self, timeframe_data, ma_data, macd_data, title_prefix="", save_dir=None):
+        """
+        绘制分离的多时间周期图表（3张独立图表）
+        
+        Parameters:
+        timeframe_data: dict - 多时间周期数据
+        ma_data: dict - 各周期移动平均线数据
+        macd_data: dict - 各周期MACD数据
+        title_prefix: str - 标题前缀
+        save_dir: str - 保存目录
+        
+        Returns:
+        dict - 包含各时间周期图表的字典
+        """
+        charts = {}
+        
+        for timeframe in ['daily', 'weekly', 'monthly']:
+            if timeframe not in timeframe_data:
+                continue
+                
+            data = timeframe_data[timeframe]
+            ma_indicators = ma_data[timeframe]
+            macd_indicators = macd_data[timeframe]
+            
+            save_path = None
+            if save_dir:
+                timeframe_names = {'daily': '日线', 'weekly': '周线', 'monthly': '月线'}
+                name = timeframe_names[timeframe]
+                save_path = os.path.join(save_dir, f'task4_{timeframe}_chart.png')
+            
+            fig, axes = self.plot_single_timeframe_chart(
+                timeframe, data, ma_indicators, macd_indicators,
+                title_prefix=title_prefix,
+                save_path=save_path
+            )
+            
+            charts[timeframe] = (fig, axes)
+        
+        return charts
+    
     def plot_multi_timeframe_comparison(self, timeframe_data, ma_data, macd_data, title="多时间周期对比分析", figsize=(20, 15), save_path=None):
         """
         绘制多时间周期对比图表
