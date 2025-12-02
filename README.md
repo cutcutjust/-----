@@ -52,8 +52,7 @@ empyrical >= 0.5.5
 ### 1. 克隆项目
 
 ```bash
-git clone <repository-url>
-cd 第六章作业
+git clone https://github.com/cutcutjust/-----.git
 ```
 
 ### 2. 安装依赖
@@ -563,7 +562,6 @@ A: 使用本地缓存，避免重复下载相同数据
 - [Mplfinance使用指南](https://github.com/matplotlib/mplfinance) - K线图绘制
 - [Pandas文档](https://pandas.pydata.org/docs/) - 数据处理
 - [Matplotlib文档](https://matplotlib.org/stable/contents.html) - 数据可视化
-
 
 <p align="center">
   <strong>🎉 感谢使用金融数据分析项目！</strong><br>
